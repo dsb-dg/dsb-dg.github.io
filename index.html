@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSB-DG · Document Grounding in Full-Duplex Voice Agents</title>
+<meta name="description" content="DuplexSpeechBench–Document Grounding (DSB-DG): a streaming-native benchmark for document grounding and hallucination in full-duplex spoken dialogue.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%232a78d6%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-size=%2217%22 font-family=%22sans-serif%22 font-weight=%22700%22 fill=%22white%22 text-anchor=%22middle%22%3ED%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html">DSB&#8209;DG<span>.</span></a>
+    <div class="links">
+      <a href="#overview">Overview</a>
+      <a href="#protocols">Protocols</a>
+      <a href="#benchmark">Benchmark</a>
+      <a href="#results">Results</a>
+      <a href="explorer.html">Audio&nbsp;Explorer</a>
+      <a href="#cite">Cite</a>
+      <button class="theme-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle color theme">◐</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="wrap">
+    <span class="badge">Benchmark · Full-Duplex Speech · Document Grounding</span>
+    <h1><span class="accent">DuplexSpeechBench</span> — Document Grounding</h1>
+    <p class="subtitle">Benchmarking Document Grounding and Hallucinations in Full-Duplex Voice Agents</p>
+
+    <div class="authors">
+      <a href="#">Puneet Mathur</a><sup>1</sup>,
+      <a href="#">Nedim Lipka</a><sup>1</sup>,
+      <a href="#">Zeyu Jin</a><sup>1</sup>,
+      <a href="#">Dinesh Manocha</a><sup>2</sup>
+    </div>
+    <div class="affil"><sup>1</sup>Adobe Research, San Jose, USA &nbsp;·&nbsp; <sup>2</sup>University of Maryland, College Park, USA</div>
+
+    <div class="btn-row">
+      <a class="btn primary" href="https://drive.google.com/file/d/1AXy6N1eUe5DbDj20cRdw9fHPKlyASnVm/view" target="_blank" rel="noopener"><span class="ico">📄</span> Paper</a>
+      <a class="btn" href="explorer.html"><span class="ico">🎧</span> Audio Explorer</a>
+      <a class="btn disabled" href="#" aria-disabled="true"><span class="ico">💻</span> Code <span class="soon">soon</span></a>
+      <a class="btn" href="https://huggingface.co/datasets/puneetm/DSB-DG" target="_blank" rel="noopener"><span class="ico">🗂️</span> Dataset</a>
+    </div>
+
+    <figure class="figure hero-fig">
+      <img src="assets/img/intro_overview.png" alt="DSB-DG overview: professional documents provide context to a full-duplex speech LM that listens and speaks, evaluated by three protocols — Context Saturation, Grounding Decay, and Proactive Grounding — via grounding accuracy, hallucination rate, decay score, and latency.">
+    </figure>
+  </div>
+</header>
+
+<!-- ================= OVERVIEW ================= -->
+<section id="overview">
+  <div class="wrap">
+    <p class="eyebrow">Overview</p>
+    <h2 class="section-title">Can a voice agent stay faithful to a document while it speaks?</h2>
+    <p class="lede">
+      Full-duplex speech agents listen and speak simultaneously, enabling low-latency, natural interaction.
+      Yet as they enter professional settings, fluency is not enough: users expect answers grounded in
+      task-specific documents — clinical protocols, earnings calls, contracts, regulatory filings. Under
+      contextual load, a fluent but ungrounded spoken reply can deliver a hallucination with the same
+      prosodic confidence as a grounded one. <strong>DSB-DG</strong> is a streaming-native benchmark that
+      isolates <em>when</em> full-duplex models retain, lose, or recover access to external context.
+    </p>
+
+    <div class="tiles">
+      <div class="tile"><div class="num">1,636</div><div class="lab">Verified QA pairs</div></div>
+      <div class="tile"><div class="num">50</div><div class="lab">Documents · 5 domains</div></div>
+      <div class="tile"><div class="num">5</div><div class="lab">Context tiers<br>(≈500→8k tok)</div></div>
+      <div class="tile"><div class="num">6</div><div class="lab">Systems evaluated</div></div>
+      <div class="tile"><div class="num">20</div><div class="lab">Multi-turn dialogues</div></div>
+      <div class="tile"><div class="num">3</div><div class="lab">Grounding protocols</div></div>
+    </div>
+
+    <figure class="figure" style="margin-top:22px">
+      <img src="assets/img/main_figure.png" alt="DSB-DG framework: source documents across five domains are rendered at five context tiers (500–8k tokens) and injected into a full-duplex speech LM that answers spoken queries in real time. Three protocols — Context Saturation, Grounding Decay (early vs. repeated probes across conversational drift), and Proactive Grounding (mid-dialogue context refresh) — feed an automatic evaluation pipeline: ASR, LLM judge, then metrics.">
+    </figure>
+    <p class="cap center">The DSB-DG framework — document context and spoken queries drive a full-duplex speech model,
+      evaluated by three complementary protocols and a fully automatic ASR → LLM-judge → metrics pipeline.</p>
+  </div>
+</section>
+
+<!-- ================= PROTOCOLS ================= -->
+<section id="protocols">
+  <div class="wrap">
+    <p class="eyebrow">Three complementary protocols</p>
+    <h2 class="section-title">Isolating distinct grounding failure modes</h2>
+    <p class="lede">Each protocol holds the question and its supporting evidence fixed while varying one stressor,
+      so changes in grounding can be attributed to that stressor alone.</p>
+    <div class="grid-3">
+      <div class="card protocol">
+        <div class="pill-ico">📏</div>
+        <span class="k">Experiment A</span>
+        <h3>Context Saturation</h3>
+        <p>Does grounding degrade as the document grows from ≈500 to 8,000 tokens? The same spoken question is
+          asked under five prefix-consistent context tiers.</p>
+        <span class="metric">Grounding Accuracy · Hallucination Rate</span>
+      </div>
+      <div class="card protocol">
+        <div class="pill-ico">🧠</div>
+        <span class="k">Experiment B</span>
+        <h3>Grounding Decay</h3>
+        <p>Does the model forget document facts over a 20-turn conversation? A <em>probe→distractor→repeat</em>
+          schedule replays identical early probes as late probes.</p>
+        <span class="metric">GDS = GA(A′) − GA(A)</span>
+      </div>
+      <div class="card protocol">
+        <div class="pill-ico">🔄</div>
+        <span class="k">Experiment C</span>
+        <h3>Proactive Grounding</h3>
+        <p>Does re-injecting the document mid-conversation help — or overwhelm a limited context window?
+          No / single / multiple refreshes.</p>
+        <span class="metric">Δ<sub>light</sub> · Δ<sub>heavy</sub> · Δ<sub>marginal</sub></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BENCHMARK ================= -->
+<section id="benchmark">
+  <div class="wrap">
+    <p class="eyebrow">Benchmark design</p>
+    <h2 class="section-title">50 professional documents · 5 structurally distinct domains</h2>
+    <p class="lede">Candidate QA pairs are generated from restricted document context, then passed through a
+      three-stage adversarial verification pipeline — answerability, ambiguity, and cross-tier checks —
+      yielding <strong>1,636 verified QA pairs</strong> (1,341 grounded + 295 unanswerable). All user turns
+      are spoken (16 kHz mono, fixed TTS voice); answers are transcribed with Whisper-large-v3 and scored by
+      a GPT-4o grounding judge validated at <strong>&gt;90% agreement</strong> with human annotation.</p>
+
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr><th>Domain</th><th># Docs</th><th># QA</th><th>Avg&nbsp;Q/Doc</th><th style="text-align:left">Document characteristics</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Clinical Trials</td><td>10</td><td>391</td><td>39.1</td><td style="text-align:left">Structured protocols, eligibility criteria, clinical endpoints</td></tr>
+          <tr><td>Earnings Calls</td><td>10</td><td>314</td><td>31.4</td><td style="text-align:left">Financial reporting, analyst Q&amp;A, dense numerical content</td></tr>
+          <tr><td>FDA 510(k)</td><td>10</td><td>292</td><td>29.2</td><td style="text-align:left">Regulatory filings, device specifications, standardized structure</td></tr>
+          <tr><td>Commercial Leases</td><td>10</td><td>358</td><td>35.8</td><td style="text-align:left">Contract clauses, cross-references, legal reasoning</td></tr>
+          <tr><td>Municipal Minutes</td><td>10</td><td>281</td><td>28.1</td><td style="text-align:left">Procedural narratives, motions, amendments, voting records</td></tr>
+          <tr><td class="best">Total</td><td class="best">50</td><td class="best">1,636</td><td class="best">32.7</td><td style="text-align:left">+ 20 multi-turn spoken dialogues</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cap">Table 1 — Domain composition and dataset statistics of the released v2 benchmark.</p>
+    <p class="lede" style="margin-top:16px">📦 Available on Hugging Face:
+      <a href="https://huggingface.co/datasets/puneetm/DSB-DG" target="_blank" rel="noopener"><code>puneetm/DSB-DG</code></a>
+      — <code>benchmark.json</code>, five nested document tiers, 1,636 spoken-question clips, and 20 conversation
+      scripts. <span style="color:var(--muted)">(Access-gated during review; downloadable with an <code>HF_TOKEN</code>.)</span></p>
+  </div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section id="results">
+  <div class="wrap">
+    <p class="eyebrow">Results</p>
+    <h2 class="section-title">Six systems, qualitatively distinct failure modes</h2>
+    <p class="lede">We evaluate a cascaded oracle (Whisper→GPT-4o→TTS), two strong real-time systems
+      (GPT-Realtime, MiniCPM-o), and three open-weight systems (Ultravox-v0.6-Qwen3-32B / UV-32B, SALMONN, Moshi).
+      Increasing document length produces distinct failure regimes rather than a common degradation curve.</p>
+
+    <div class="findings" style="margin-bottom:26px">
+      <div class="finding good"><h4>Cascaded leads; strong real-time systems close in</h4>
+        <p>Cascaded holds <strong>93.6% GA</strong> at the 2k tier; GPT-Realtime (89.3%) and MiniCPM-o (91.8%)
+          approach it under real-time speech generation.</p></div>
+      <div class="finding warn"><h4>SALMONN — context-capacity cliff</h4>
+        <p>Grounding collapses from <strong>62.1% → 13.1%</strong> at T3→T4 (−49 pp), with hallucination surging
+          to <strong>48%</strong>: the model keeps talking after losing the document.</p></div>
+      <div class="finding bad"><h4>UV-32B — severe multi-turn decay</h4>
+        <p>Among competent grounders, UV-32B shows the largest conversational forgetting: <strong>GDS −11.7</strong>.</p></div>
+      <div class="finding bad"><h4>Moshi — fluent but ungrounded</h4>
+        <p>Fails to produce document-grounded answers across every tier (<strong>~0% GA</strong>); an effective
+          context budget of only a couple hundred tokens.</p></div>
+    </div>
+
+    <!-- charts -->
+    <div class="grid-2">
+      <div class="chart-card">
+        <h3>Grounding Accuracy under context load</h3>
+        <p class="sub">Experiment A · GA (%) vs. context tier</p>
+        <svg id="chartGA" viewBox="0 0 460 300" width="100%" role="img" aria-label="Line chart of grounding accuracy versus context tier for six systems."></svg>
+      </div>
+      <div class="chart-card">
+        <h3>Hallucination rate under context load</h3>
+        <p class="sub">Experiment A · HR (%) vs. context tier</p>
+        <svg id="chartHR" viewBox="0 0 460 300" width="100%" role="img" aria-label="Line chart of hallucination rate versus context tier for five systems."></svg>
+      </div>
+    </div>
+    <div class="legend" id="modelLegend" style="margin-top:14px"></div>
+
+    <!-- Exp A table -->
+    <h3 style="margin:30px 0 8px; font-size:18px">Experiment A — Grounding Accuracy by tier</h3>
+    <div class="table-wrap">
+      <table class="data" id="tblA"></table>
+    </div>
+    <p class="cap">Table 2 — GA (%) across token-length tiers. Moshi–EC is the extractive-compression variant restricting injected context to query-relevant content.</p>
+
+    <div class="grid-2" style="margin-top:28px">
+      <div>
+        <h3 style="margin:0 0 8px; font-size:18px">Experiment B — Grounding Decay</h3>
+        <div class="table-wrap"><table class="data" id="tblB"></table></div>
+        <p class="cap">GDS = GA(A′) − GA(A) over 20-turn conversations; negative = forgetting.</p>
+      </div>
+      <div>
+        <h3 style="margin:0 0 8px; font-size:18px">Experiment C — Proactive Grounding</h3>
+        <div class="table-wrap"><table class="data" id="tblC"></table></div>
+        <p class="cap">GA under no / single / multiple refreshes. Re-injection helps strong systems, hurts smaller backbones.</p>
+      </div>
+    </div>
+
+    <h3 style="margin:30px 0 8px; font-size:18px">Latency & the quality-adjusted frontier</h3>
+    <div class="table-wrap"><table class="data" id="tblL"></table></div>
+    <p class="cap">Table 5 — First-Token Emission Delay (FTED) and Quality-Adjusted Latency
+      (QAL = FTED<sub>p50</sub>·(1−GA@T3)). Cascaded and GPT-Realtime dominate the quality-adjusted frontier;
+      Moshi is fast but does not ground.</p>
+  </div>
+</section>
+
+<!-- ================= EXPLORER TEASER ================= -->
+<section id="explore-teaser">
+  <div class="wrap">
+    <div class="card" style="display:flex; gap:22px; align-items:center; flex-wrap:wrap; justify-content:space-between">
+      <div style="max-width:60ch">
+        <p class="eyebrow" style="margin-bottom:6px">Qualitative examples</p>
+        <h2 class="section-title" style="font-size:22px">Listen to the questions. Compare every model's answer.</h2>
+        <p class="lede" style="margin-bottom:0">The Audio Explorer pairs each real spoken question with all six systems'
+          transcribed replies and the grounding-judge verdict — grounded, hallucination, or calibrated refusal —
+          filterable by domain, tier, and failure mode.</p>
+      </div>
+      <a class="btn primary" href="explorer.html"><span class="ico">🎧</span> Open the Audio Explorer</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CITE ================= -->
+<section id="cite">
+  <div class="wrap">
+    <p class="eyebrow">Citation</p>
+    <h2 class="section-title">Cite DSB-DG</h2>
+    <pre class="bib" id="bib"><button class="copy-btn" onclick="copyBib()">Copy</button>@inproceedings{mathur2026duplexspeechbench,
+  title     = {{DuplexSpeechBench -- Document Grounding}: Benchmarking Document
+               Grounding and Hallucinations in Full-Duplex Voice Agents},
+  author    = {Mathur, Puneet and Lipka, Nedim and Jin, Zeyu and Manocha, Dinesh},
+  year      = {2026}
+}</pre>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    DSB-DG — DuplexSpeechBench · Document Grounding &nbsp;·&nbsp; Adobe Research &amp; University of Maryland.
+    &nbsp; Results are as reported in the manuscript; dataset statistics reflect the released v2 benchmark.
+  </div>
+</footer>
+
+<script src="assets/js/charts.js"></script>
+<script>
+/* theme toggle (shared) */
+(function(){
+  const root=document.documentElement, KEY='dsbdg-theme';
+  const saved=localStorage.getItem(KEY);
+  if(saved) root.setAttribute('data-theme',saved);
+  const btn=document.getElementById('themeBtn');
+  function cur(){ return root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'); }
+  btn && btn.addEventListener('click',()=>{ const n=cur()==='dark'?'light':'dark'; root.setAttribute('data-theme',n); localStorage.setItem(KEY,n); window.__redrawCharts&&window.__redrawCharts(); });
+})();
+function copyBib(){ const t=document.getElementById('bib').innerText.replace(/^Copy\n/,''); navigator.clipboard.writeText(t); const b=document.querySelector('.copy-btn'); b.textContent='Copied ✓'; setTimeout(()=>b.textContent='Copy',1500); }
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audio Explorer · DSB-DG</title>
+<meta name="description" content="Explore qualitative examples from DSB-DG: spoken questions, source documents with highlighted evidence, and every model's answer across three protocols.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%232a78d6%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-size=%2217%22 font-family=%22sans-serif%22 font-weight=%22700%22 fill=%22white%22 text-anchor=%22middle%22%3ED%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html">DSB&#8209;DG<span>.</span></a>
+    <div class="links">
+      <a href="index.html#overview">Overview</a>
+      <a href="index.html#results">Results</a>
+      <a href="index.html#cite">Cite</a>
+      <a href="index.html">← Project page</a>
+      <button class="theme-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle color theme">◐</button>
+    </div>
+  </div>
+</nav>
+
+<header class="explorer-head">
+  <div class="wrap">
+    <p class="eyebrow">Qualitative examples</p>
+    <h1>🎧 Audio Explorer</h1>
+    <p class="lede" style="margin-bottom:14px">Browse real benchmark examples across all three protocols. Every example ships
+      its source document with the supporting evidence highlighted, so you can verify each answer against the document yourself.</p>
+    <div class="info-banner">
+      <strong>How to read this.</strong> <b>Context Saturation</b> plays the actual spoken question and shows every model's
+      transcribed answer + grounding-judge verdict. <b>Grounding Decay</b> and <b>Proactive Grounding</b> show the full
+      multi-turn conversation. Model answer audio was scored in-flight and not persisted, so answers appear as transcript +
+      verdict rather than re-synthesized speech. Expand <em>“Source document”</em> on any card to see the evidence
+      <mark style="padding:0 3px">highlighted</mark> in context.
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <p class="tab-intro" id="tabIntro"></p>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="row" style="margin-bottom:10px">
+      <div class="filter-group"><span class="lab">Domain</span><span id="fDomain"></span></div>
+    </div>
+    <div class="row">
+      <div class="filter-group" id="grpTier"><span class="lab">Tier</span><span id="fTier"></span></div>
+      <div class="filter-group" id="grpType"><span class="lab">Type</span><span id="fType"></span></div>
+      <div class="filter-group" id="grpTag"><span class="lab">Highlight</span><span id="fTag"></span></div>
+      <div class="search-box"><input id="search" type="search" placeholder="Search questions, answers, documents…" autocomplete="off"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <p class="count-line" id="countLine"></p>
+  <div class="ex-list" id="list"></div>
+  <div class="empty-state" id="empty" style="display:none">No examples match these filters.</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    DSB-DG Audio Explorer &nbsp;·&nbsp; <span id="footNote"></span> &nbsp;·&nbsp;
+    <a href="index.html">Back to the project page</a>
+  </div>
+</footer>
+
+<script src="assets/data/explorer_data.js"></script>
+<script src="assets/js/explorer.js"></script>
+<script>
+(function(){
+  const root=document.documentElement, KEY='dsbdg-theme';
+  const saved=localStorage.getItem(KEY); if(saved) root.setAttribute('data-theme',saved);
+  const btn=document.getElementById('themeBtn');
+  function cur(){ return root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'); }
+  btn && btn.addEventListener('click',()=>{ const n=cur()==='dark'?'light':'dark'; root.setAttribute('data-theme',n); localStorage.setItem(KEY,n); });
+})();
+</script>
+</body>
+</html>
