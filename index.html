@@ -1,274 +1,375 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DSB-DG · Document Grounding in Full-Duplex Voice Agents</title>
-<meta name="description" content="DuplexSpeechBench–Document Grounding (DSB-DG): a streaming-native benchmark for document grounding and hallucination in full-duplex spoken dialogue.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%232a78d6%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-size=%2217%22 font-family=%22sans-serif%22 font-weight=%22700%22 fill=%22white%22 text-anchor=%22middle%22%3ED%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/css/styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DSB-DG · Document Grounding in Voice Agents</title>
+  <meta name="description" content="DuplexSpeechBench–Document Grounding (DSB-DG): 1,636 verified spoken QA pairs, 50 professional documents, and three protocols evaluating document grounding, hallucination, retention, and latency across seven voice systems.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%232a78d6%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-size=%2217%22 font-family=%22sans-serif%22 font-weight=%22700%22 fill=%22white%22 text-anchor=%22middle%22%3ED%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    /* Small additions to the existing DSB-DG stylesheet; no external chart JS required. */
+    html { scroll-behavior: smooth; }
+    .muted-note { font-size: 13px; line-height: 1.6; color: var(--muted, #687587); }
+    .result-kicker { display:block; font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted,#697687); margin-bottom: 6px; }
+    .finding strong { font-variant-numeric: tabular-nums; }
+    .chart-card svg { display:block; max-width:100%; overflow: visible; }
+    .model-legend { display:flex; gap: 10px 18px; flex-wrap:wrap; align-items:center; margin: 16px 0 0; font-size: 12px; color: var(--fg,inherit); }
+    .legend-entry { display:inline-flex; gap:7px; align-items:center; white-space:nowrap; }
+    .legend-swatch { display:inline-block; width:19px; border-top:3px solid var(--model-color); border-radius:2px; }
+    .stat-emphasis { font-size: clamp(21px, 3.3vw, 30px); font-weight: 800; line-height: 1.2; letter-spacing: -.035em; }
+    .comparison-row { display:grid; grid-template-columns: minmax(95px, 110px) 1fr 54px; gap: 10px; align-items:center; margin: 12px 0; font-size: 13px; }
+    .comparison-track { background:var(--border,#dce4ec); border-radius: 999px; height:13px; overflow: hidden; }
+    .comparison-fill { display:block; height:100%; width:var(--bar-width); background:var(--bar-color); border-radius:999px; }
+    .comparison-row b { font-variant-numeric:tabular-nums; text-align:right; }
+    .metric-pair { display:flex; gap: 14px; flex-wrap:wrap; margin-top: 19px; }
+    .metric-pair > div { flex:1; min-width:115px; padding:12px; border:1px solid var(--border,#e0e6ef); border-radius:10px; }
+    .metric-pair .muted-note { display:block; }
+    .source-line { margin-top:12px; font-size: 12px; color:var(--muted,#697687); }
+    .source-line a { color: inherit; text-decoration:underline; }
+    .data th, .data td { font-variant-numeric: tabular-nums; }
+    .data th:first-child, .data td:first-child { text-align:left; white-space:nowrap; }
+    .data td.delta-pos { color:#0c8966; font-weight:700; }
+    .data td.delta-neg { color:#b93a4e; font-weight:700; }
+    .data td.strong-cell { font-weight:800; }
+    .data .total-row td { font-weight:700; }
+    .section-subhead { margin: 30px 0 8px; font-size: 18px; }
+    .section-intro { max-width: 82ch; }
+    .formula { font-weight:600; letter-spacing:.01em; }
+    .invisible-text { position:absolute; clip:rect(0,0,0,0); width:1px; height:1px; overflow:hidden; white-space:nowrap; }
+    .two-up { display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap:26px; }
+    .plain-insight { margin-top:14px; padding:14px 18px; border-left:3px solid var(--accent,#2a78d6); background:var(--surface,#f7f9fc); border-radius:0 8px 8px 0; line-height:1.6; }
+    @media (max-width:780px) { .two-up {grid-template-columns:1fr;} .comparison-row { grid-template-columns: minmax(80px,105px) 1fr 44px; gap:7px;} .table-wrap { overflow-x:auto; } .data { min-width:560px;} }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+  </style>
 </head>
 <body>
-
-<!-- ================= NAV ================= -->
-<nav class="nav">
-  <div class="wrap">
-    <a class="brand" href="index.html">DSB&#8209;DG<span>.</span></a>
-    <div class="links">
-      <a href="#overview">Overview</a>
-      <a href="#protocols">Protocols</a>
-      <a href="#benchmark">Benchmark</a>
-      <a href="#results">Results</a>
-      <a href="explorer.html">Audio&nbsp;Explorer</a>
-      <a href="#cite">Cite</a>
-      <button class="theme-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle color theme">◐</button>
-    </div>
-  </div>
-</nav>
-
-<!-- ================= HERO ================= -->
-<header class="hero">
-  <div class="wrap">
-    <span class="badge">Benchmark · Full-Duplex Speech · Document Grounding</span>
-    <h1><span class="accent">DuplexSpeechBench</span> — Document Grounding</h1>
-    <p class="subtitle">Benchmarking Document Grounding and Hallucinations in Full-Duplex Voice Agents</p>
-
-    <div class="authors">
-      <a href="#">Puneet Mathur</a><sup>1</sup>,
-      <a href="#">Nedim Lipka</a><sup>1</sup>,
-      <a href="#">Zeyu Jin</a><sup>1</sup>,
-      <a href="#">Dinesh Manocha</a><sup>2</sup>
-    </div>
-    <div class="affil"><sup>1</sup>Adobe Research, San Jose, USA &nbsp;·&nbsp; <sup>2</sup>University of Maryland, College Park, USA</div>
-
-    <div class="btn-row">
-      <a class="btn primary" href="https://arxiv.org/pdf/2610.00316" target="_blank" rel="noopener"><span class="ico">📄</span> Paper</a>
-      <a class="btn" href="explorer.html"><span class="ico">🎧</span> Audio Explorer</a>
-      <a class="btn" href="https://github.com/dsb-dg/dsb-dg"><span class="ico">💻</span> Code </a>
-      <a class="btn" href="https://huggingface.co/datasets/puneetm/DSB-DG" target="_blank" rel="noopener"><span class="ico">🗂️</span> Dataset</a>
-    </div>
-
-    <figure class="figure hero-fig">
-      <img src="assets/img/intro_overview.png" alt="DSB-DG overview: professional documents provide context to a full-duplex speech LM that listens and speaks, evaluated by three protocols — Context Saturation, Grounding Decay, and Proactive Grounding — via grounding accuracy, hallucination rate, decay score, and latency.">
-    </figure>
-  </div>
-</header>
-
-<!-- ================= OVERVIEW ================= -->
-<section id="overview">
-  <div class="wrap">
-    <p class="eyebrow">Overview</p>
-    <h2 class="section-title">Can a voice agent stay faithful to a document while it speaks?</h2>
-    <p class="lede">
-      Full-duplex speech agents listen and speak simultaneously, enabling low-latency, natural interaction.
-      Yet as they enter professional settings, fluency is not enough: users expect answers grounded in
-      task-specific documents — clinical protocols, earnings calls, contracts, regulatory filings. Under
-      contextual load, a fluent but ungrounded spoken reply can deliver a hallucination with the same
-      prosodic confidence as a grounded one. <strong>DSB-DG</strong> is a streaming-native benchmark that
-      isolates <em>when</em> full-duplex models retain, lose, or recover access to external context.
-    </p>
-
-    <div class="tiles">
-      <div class="tile"><div class="num">1,636</div><div class="lab">Verified QA pairs</div></div>
-      <div class="tile"><div class="num">50</div><div class="lab">Documents · 5 domains</div></div>
-      <div class="tile"><div class="num">5</div><div class="lab">Context tiers<br>(≈500→8k tok)</div></div>
-      <div class="tile"><div class="num">6</div><div class="lab">Systems evaluated</div></div>
-      <div class="tile"><div class="num">20</div><div class="lab">Multi-turn dialogues</div></div>
-      <div class="tile"><div class="num">3</div><div class="lab">Grounding protocols</div></div>
-    </div>
-
-    <figure class="figure" style="margin-top:22px">
-      <img src="assets/img/main_figure.png" alt="DSB-DG framework: source documents across five domains are rendered at five context tiers (500–8k tokens) and injected into a full-duplex speech LM that answers spoken queries in real time. Three protocols — Context Saturation, Grounding Decay (early vs. repeated probes across conversational drift), and Proactive Grounding (mid-dialogue context refresh) — feed an automatic evaluation pipeline: ASR, LLM judge, then metrics.">
-    </figure>
-    <p class="cap center">The DSB-DG framework — document context and spoken queries drive a full-duplex speech model,
-      evaluated by three complementary protocols and a fully automatic ASR → LLM-judge → metrics pipeline.</p>
-  </div>
-</section>
-
-<!-- ================= PROTOCOLS ================= -->
-<section id="protocols">
-  <div class="wrap">
-    <p class="eyebrow">Three complementary protocols</p>
-    <h2 class="section-title">Isolating distinct grounding failure modes</h2>
-    <p class="lede">Each protocol holds the question and its supporting evidence fixed while varying one stressor,
-      so changes in grounding can be attributed to that stressor alone.</p>
-    <div class="grid-3">
-      <div class="card protocol">
-        <div class="pill-ico">📏</div>
-        <span class="k">Experiment A</span>
-        <h3>Context Saturation</h3>
-        <p>Does grounding degrade as the document grows from ≈500 to 8,000 tokens? The same spoken question is
-          asked under five prefix-consistent context tiers.</p>
-        <span class="metric">Grounding Accuracy · Hallucination Rate</span>
-      </div>
-      <div class="card protocol">
-        <div class="pill-ico">🧠</div>
-        <span class="k">Experiment B</span>
-        <h3>Grounding Decay</h3>
-        <p>Does the model forget document facts over a 20-turn conversation? A <em>probe→distractor→repeat</em>
-          schedule replays identical early probes as late probes.</p>
-        <span class="metric">GDS = GA(A′) − GA(A)</span>
-      </div>
-      <div class="card protocol">
-        <div class="pill-ico">🔄</div>
-        <span class="k">Experiment C</span>
-        <h3>Proactive Grounding</h3>
-        <p>Does re-injecting the document mid-conversation help — or overwhelm a limited context window?
-          No / single / multiple refreshes.</p>
-        <span class="metric">Δ<sub>light</sub> · Δ<sub>heavy</sub> · Δ<sub>marginal</sub></span>
+  <nav class="nav" aria-label="Main navigation">
+    <div class="wrap">
+      <a class="brand" href="index.html">DSB&#8209;DG<span>.</span></a>
+      <div class="links">
+        <a href="#overview">Overview</a>
+        <a href="#protocols">Protocols</a>
+        <a href="#benchmark">Benchmark</a>
+        <a href="#results">Results</a>
+        <a href="explorer.html">Audio&nbsp;Explorer</a>
+        <a href="#cite">Cite</a>
+        <button class="theme-btn" id="themeBtn" type="button" title="Toggle theme" aria-label="Toggle color theme">◐</button>
       </div>
     </div>
-  </div>
-</section>
+  </nav>
 
-<!-- ================= BENCHMARK ================= -->
-<section id="benchmark">
-  <div class="wrap">
-    <p class="eyebrow">Benchmark design</p>
-    <h2 class="section-title">50 professional documents · 5 structurally distinct domains</h2>
-    <p class="lede">Candidate QA pairs are generated from restricted document context, then passed through a
-      three-stage adversarial verification pipeline — answerability, ambiguity, and cross-tier checks —
-      yielding <strong>1,636 verified QA pairs</strong> (1,341 grounded + 295 unanswerable). All user turns
-      are spoken (16 kHz mono, fixed TTS voice); answers are transcribed with Whisper-large-v3 and scored by
-      a GPT-4o grounding judge validated at <strong>&gt;90% agreement</strong> with human annotation.</p>
-
-    <div class="table-wrap">
-      <table class="data">
-        <thead>
-          <tr><th>Domain</th><th># Docs</th><th># QA</th><th>Avg&nbsp;Q/Doc</th><th style="text-align:left">Document characteristics</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Clinical Trials</td><td>10</td><td>391</td><td>39.1</td><td style="text-align:left">Structured protocols, eligibility criteria, clinical endpoints</td></tr>
-          <tr><td>Earnings Calls</td><td>10</td><td>314</td><td>31.4</td><td style="text-align:left">Financial reporting, analyst Q&amp;A, dense numerical content</td></tr>
-          <tr><td>FDA 510(k)</td><td>10</td><td>292</td><td>29.2</td><td style="text-align:left">Regulatory filings, device specifications, standardized structure</td></tr>
-          <tr><td>Commercial Leases</td><td>10</td><td>358</td><td>35.8</td><td style="text-align:left">Contract clauses, cross-references, legal reasoning</td></tr>
-          <tr><td>Municipal Minutes</td><td>10</td><td>281</td><td>28.1</td><td style="text-align:left">Procedural narratives, motions, amendments, voting records</td></tr>
-          <tr><td class="best">Total</td><td class="best">50</td><td class="best">1,636</td><td class="best">32.7</td><td style="text-align:left">+ 20 multi-turn spoken dialogues</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="cap">Table 1 — Domain composition and dataset statistics of the released benchmark.</p>
-    <p class="lede" style="margin-top:16px">📦 Available on Hugging Face:
-      <a href="https://huggingface.co/datasets/puneetm/DSB-DG" target="_blank" rel="noopener"><code>puneetm/DSB-DG</code></a>
-      — <code>benchmark.json</code>, five nested document tiers, 1,636 spoken-question clips, and 20 conversation
-      scripts. <span style="color:var(--muted)">(Access-gated during review; downloadable with an <code>HF_TOKEN</code>.)</span></p>
-  </div>
-</section>
-
-<!-- ================= RESULTS ================= -->
-<section id="results">
-  <div class="wrap">
-    <p class="eyebrow">Results</p>
-    <h2 class="section-title">Six systems, qualitatively distinct failure modes</h2>
-    <p class="lede">We evaluate a cascaded oracle (Whisper→GPT-4o→TTS), two strong real-time systems
-      (GPT-Realtime, MiniCPM-o), and three open-weight systems (Ultravox-v0.6-Qwen3-32B / UV-32B, SALMONN, Moshi).
-      Increasing document length produces distinct failure regimes rather than a common degradation curve.</p>
-
-    <div class="findings" style="margin-bottom:26px">
-      <div class="finding good"><h4>Cascaded leads; strong real-time systems close in</h4>
-        <p>Cascaded holds <strong>93.6% GA</strong> at the 2k tier; GPT-Realtime (89.3%) and MiniCPM-o (91.8%)
-          approach it under real-time speech generation.</p></div>
-      <div class="finding warn"><h4>SALMONN — context-capacity cliff</h4>
-        <p>Grounding collapses from <strong>62.1% → 13.1%</strong> at T3→T4 (−49 pp), with hallucination surging
-          to <strong>48%</strong>: the model keeps talking after losing the document.</p></div>
-      <div class="finding bad"><h4>UV-32B — severe multi-turn decay</h4>
-        <p>Among competent grounders, UV-32B shows the largest conversational forgetting: <strong>GDS −11.7</strong>.</p></div>
-      <div class="finding bad"><h4>Moshi — fluent but ungrounded</h4>
-        <p>Fails to produce document-grounded answers across every tier (<strong>~0% GA</strong>); an effective
-          context budget of only a couple hundred tokens.</p></div>
-    </div>
-
-    <!-- charts -->
-    <div class="grid-2">
-      <div class="chart-card">
-        <h3>Grounding Accuracy under context load</h3>
-        <p class="sub">Experiment A · GA (%) vs. context tier</p>
-        <svg id="chartGA" viewBox="0 0 460 300" width="100%" role="img" aria-label="Line chart of grounding accuracy versus context tier for six systems."></svg>
+  <header class="hero">
+    <div class="wrap">
+      <span class="badge">Benchmark · Spoken Dialogue · Document Grounding</span>
+      <h1><span class="accent">DuplexSpeechBench</span> — Document Grounding</h1>
+      <p class="subtitle">Benchmarking Document Grounding and Hallucinations in Voice Agents</p>
+      <div class="authors">
+        Puneet Mathur<sup>1</sup>,
+        Nedim Lipka<sup>1</sup>,
+        Zeyu Jin<sup>1</sup>,
+        Dinesh Manocha<sup>2</sup>
       </div>
-      <div class="chart-card">
-        <h3>Hallucination rate under context load</h3>
-        <p class="sub">Experiment A · HR (%) vs. context tier</p>
-        <svg id="chartHR" viewBox="0 0 460 300" width="100%" role="img" aria-label="Line chart of hallucination rate versus context tier for five systems."></svg>
+      <div class="affil"><sup>1</sup>Adobe Research, San Jose, USA &nbsp;·&nbsp; <sup>2</sup>University of Maryland, College Park, USA</div>
+      <div class="btn-row">
+        <a class="btn primary" href="https://arxiv.org/pdf/2610.00316" target="_blank" rel="noopener noreferrer"><span class="ico">📄</span> Paper</a>
+        <a class="btn" href="explorer.html"><span class="ico">🎧</span> Audio Explorer</a>
+        <a class="btn" href="https://github.com/dsb-dg/dsb-dg" target="_blank" rel="noopener noreferrer"><span class="ico">💻</span> Code</a>
+        <a class="btn" href="https://huggingface.co/datasets/puneetm/DSB-DG" target="_blank" rel="noopener noreferrer"><span class="ico">🗂️</span> Dataset</a>
       </div>
+      <figure class="figure hero-fig">
+        <img src="assets/img/intro_overview.png" alt="DSB-DG evaluates grounding of spoken answers against professional documents through context saturation, grounding decay, and proactive context refresh." loading="eager">
+      </figure>
     </div>
-    <div class="legend" id="modelLegend" style="margin-top:14px"></div>
+  </header>
 
-    <!-- Exp A table -->
-    <h3 style="margin:30px 0 8px; font-size:18px">Experiment A — Grounding Accuracy by tier</h3>
-    <div class="table-wrap">
-      <table class="data" id="tblA"></table>
-    </div>
-    <p class="cap">Table 2 — GA (%) across token-length tiers. Moshi–EC is the extractive-compression variant restricting injected context to query-relevant content.</p>
-
-    <div class="grid-2" style="margin-top:28px">
-      <div>
-        <h3 style="margin:0 0 8px; font-size:18px">Experiment B — Grounding Decay</h3>
-        <div class="table-wrap"><table class="data" id="tblB"></table></div>
-        <p class="cap">GDS = GA(A′) − GA(A) over 20-turn conversations; negative = forgetting.</p>
+  <main>
+    <section id="overview">
+      <div class="wrap">
+        <p class="eyebrow">Overview</p>
+        <h2 class="section-title">Can a voice agent stay faithful to a document while it speaks?</h2>
+        <p class="lede section-intro">Voice agents can respond with natural, low-latency speech, but professional use requires more than fluency. An answer to a question about a clinical protocol, earnings call, lease, or regulatory filing must be supported by the source document. <strong>DSB-DG</strong> benchmarks when document-grounded voice systems retain facts, lose access to evidence, or recover grounding after context is refreshed. We evaluate factual accuracy, unsupported claims, multi-turn retention, and response latency.</p>
+        <div class="tiles">
+          <div class="tile"><div class="num">1,636</div><div class="lab">Verified QA pairs</div></div>
+          <div class="tile"><div class="num">50</div><div class="lab">Documents · 5 domains</div></div>
+          <div class="tile"><div class="num">5</div><div class="lab">Context tiers<br>(≈500–8k tokens)</div></div>
+          <div class="tile"><div class="num">7</div><div class="lab">Systems evaluated</div></div>
+          <div class="tile"><div class="num">20</div><div class="lab">Multi-turn dialogues</div></div>
+          <div class="tile"><div class="num">3</div><div class="lab">Grounding protocols</div></div>
+        </div>
+        <figure class="figure" style="margin-top:22px">
+          <img src="assets/img/main_figure.png" alt="DSB-DG workflow: professional source documents are prepared at five nested context lengths and presented to voice agents, which answer synthesized spoken questions in three controlled grounding protocols." loading="lazy">
+        </figure>
+        <p class="cap center">DSB-DG: five professional domains, five prefix-consistent document tiers, three controlled grounding protocols, and automatic scoring of spoken answers.</p>
       </div>
-      <div>
-        <h3 style="margin:0 0 8px; font-size:18px">Experiment C — Proactive Grounding</h3>
-        <div class="table-wrap"><table class="data" id="tblC"></table></div>
-        <p class="cap">GA under no / single / multiple refreshes. Re-injection helps strong systems, hurts smaller backbones.</p>
+    </section>
+
+    <section id="protocols">
+      <div class="wrap">
+        <p class="eyebrow">Three complementary protocols</p>
+        <h2 class="section-title">Three ways document grounding breaks</h2>
+        <p class="lede section-intro">The evaluation changes one source of difficulty at a time: document length, conversational progression, or document re-injection.</p>
+        <div class="grid-3">
+          <div class="card protocol">
+            <div class="pill-ico">📏</div><span class="k">Experiment A</span>
+            <h3>Context Saturation</h3>
+            <p>Ask the <strong>same spoken question</strong> at all eligible prefix-consistent document tiers, from approximately 500 to 8,000 tokens. The answer-bearing evidence remains available as context grows.</p>
+            <span class="metric">Grounding Accuracy (GA) · Hallucination Rate (HR)</span>
+          </div>
+          <div class="card protocol">
+            <div class="pill-ico">🧠</div><span class="k">Experiment B</span>
+            <h3>Grounding Decay</h3>
+            <p>Use a <strong>probe → distractor → repeat</strong> structure in controlled 17-turn dialogues. Late probes repeat the early factual questions to measure retention as the conversation progresses.</p>
+            <span class="metric">GDS = GA(A′) − GA(A)</span>
+          </div>
+          <div class="card protocol">
+            <div class="pill-ico">🔄</div><span class="k">Experiment C</span>
+            <h3>Proactive Grounding</h3>
+            <p>Compare <strong>no refresh (C₀)</strong>, <strong>one refresh (C₁)</strong>, and <strong>multiple refreshes (C₂)</strong> with the same dialogue. Test when adding the document back helps or hurts.</p>
+            <span class="metric">Δlight = C₁ − C₀ · Δheavy = C₂ − C₀</span>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <h3 style="margin:30px 0 8px; font-size:18px">Latency & the quality-adjusted frontier</h3>
-    <div class="table-wrap"><table class="data" id="tblL"></table></div>
-    <p class="cap">Table 5 — First-Token Emission Delay (FTED) and Quality-Adjusted Latency
-      (QAL = FTED<sub>p50</sub>·(1−GA@T3)). Cascaded and GPT-Realtime dominate the quality-adjusted frontier;
-      Moshi is fast but does not ground.</p>
-  </div>
-</section>
-
-<!-- ================= EXPLORER TEASER ================= -->
-<section id="explore-teaser">
-  <div class="wrap">
-    <div class="card" style="display:flex; gap:22px; align-items:center; flex-wrap:wrap; justify-content:space-between">
-      <div style="max-width:60ch">
-        <p class="eyebrow" style="margin-bottom:6px">Qualitative examples</p>
-        <h2 class="section-title" style="font-size:22px">Listen to the questions. Compare every model's answer.</h2>
-        <p class="lede" style="margin-bottom:0">The Audio Explorer pairs each real spoken question with all six systems'
-          transcribed replies and the grounding-judge verdict — grounded, hallucination, or calibrated refusal —
-          filterable by domain, tier, and failure mode.</p>
+    <section id="benchmark">
+      <div class="wrap">
+        <p class="eyebrow">Benchmark design</p>
+        <h2 class="section-title">1,636 questions across five professional domains</h2>
+        <p class="lede section-intro">We construct <strong>1,341 grounded</strong> and <strong>295 unanswerable</strong> question–answer pairs from 50 documents, with 10 documents per domain. Candidate questions are generated using <strong>GPT-OSS-20B</strong> with restricted document context and filtered through answerability, ambiguity, and cross-tier consistency checks. All user queries use fixed-voice <strong>16 kHz mono synthetic speech</strong>; responses are transcribed using <strong>Whisper-large-v3</strong> and judged for factual support by <strong>GPT-OSS-120B</strong>.</p>
+        <div class="table-wrap">
+          <table class="data" aria-label="Domain composition of DSB-DG">
+            <thead><tr><th scope="col">Domain</th><th scope="col">Documents</th><th scope="col">QA pairs</th><th scope="col">Qs / doc</th><th scope="col" style="text-align:left">Document characteristics</th></tr></thead>
+            <tbody>
+              <tr><td>Clinical Trials</td><td>10</td><td>391</td><td>39.1</td><td style="text-align:left">Structured protocols, eligibility criteria, clinical endpoints</td></tr>
+              <tr><td>Earnings Calls</td><td>10</td><td>314</td><td>31.4</td><td style="text-align:left">Financial reporting, analyst Q&amp;A, dense numerical content</td></tr>
+              <tr><td>FDA 510(k)</td><td>10</td><td>292</td><td>29.2</td><td style="text-align:left">Regulatory filings, device specifications, standardized structure</td></tr>
+              <tr><td>Commercial Leases</td><td>10</td><td>358</td><td>35.8</td><td style="text-align:left">Contract clauses, cross-references, legal reasoning</td></tr>
+              <tr><td>Municipal Minutes</td><td>10</td><td>281</td><td>28.1</td><td style="text-align:left">Procedural narratives, motions, amendments, voting records</td></tr>
+              <tr class="total-row"><td>Total</td><td>50</td><td>1,636</td><td>32.7</td><td style="text-align:left">Plus 20 controlled multi-turn spoken dialogues</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="cap">Paper Table 2 — Benchmark composition. Five nested document tiers contain approximately 500, 1k, 2k, 4k, and 8k tokens.</p>
+        <p class="lede" style="margin-top:16px">📦 <strong>Dataset:</strong> <a href="https://huggingface.co/datasets/puneetm/DSB-DG" target="_blank" rel="noopener noreferrer"><code>puneetm/DSB-DG</code></a> · <strong>Code:</strong> <a href="https://github.com/dsb-dg/dsb-dg" target="_blank" rel="noopener noreferrer"><code>dsb-dg/dsb-dg</code></a></p>
       </div>
-      <a class="btn primary" href="explorer.html"><span class="ico">🎧</span> Open the Audio Explorer</a>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- ================= CITE ================= -->
-<section id="cite">
-  <div class="wrap">
-    <p class="eyebrow">Citation</p>
-    <h2 class="section-title">Cite DSB-DG</h2>
-    <pre class="bib" id="bib"><button class="copy-btn" onclick="copyBib()">Copy</button>@inproceedings{mathur2026duplexspeechbench,
-  title     = {{DuplexSpeechBench -- Document Grounding}: Benchmarking Document
-               Grounding and Hallucinations in Full-Duplex Voice Agents},
-  author    = {Mathur, Puneet and Lipka, Nedim and Jin, Zeyu and Manocha, Dinesh},
-  year      = {2026}
+    <section id="results">
+      <div class="wrap">
+        <p class="eyebrow">Results · Seven evaluated systems</p>
+        <h2 class="section-title">Grounding failures are architecture-dependent</h2>
+        <p class="lede section-intro">We evaluate <strong>Cascaded (Whisper → GPT-4o → TTS)</strong>, <strong>Gemini-Live</strong>, <strong>GPT-Realtime</strong>, <strong>MiniCPM-o-4.5</strong>, <strong>Ultravox-v0.6-Qwen3-32B (UV-32B)</strong>, <strong>SALMONN</strong>, and <strong>Moshi</strong>. The paper's main results show distinct limits of context capacity, retention, and latency.</p>
+
+        <div class="findings" style="margin-bottom:26px">
+          <div class="finding good"><h4>Strong grounding is possible at 2k tokens</h4><p>Cascaded leads at <strong>90.3% GA</strong>. MiniCPM-o reaches <strong>88.0%</strong>; GPT-Realtime reaches <strong>87.7%</strong>; Gemini-Live reaches <strong>87.4%</strong>.</p></div>
+          <div class="finding warn"><h4>SALMONN hits a sharp context-capacity cliff</h4><p>Grounding falls from <strong>70.3% (T3) to 37.2% (T4)</strong> — a <strong>33.1-point</strong> drop. Its hallucination rate rises from <strong>30.1% to 39.8%</strong>.</p></div>
+          <div class="finding bad"><h4>Good single-turn grounding need not survive dialogue</h4><p>UV-32B drops from <strong>80.0% to 75.0%</strong> between repeated early and late probes (<strong>GDS −5.0 points</strong>); Gemini-Live has <strong>GDS +3.3</strong>.</p></div>
+          <div class="finding good"><h4>Refreshing context helps — selectively</h4><p>A single refresh improves GPT-Realtime by <strong>+14.6 points</strong>; multiple refreshes improve Cascaded by <strong>+7.1</strong>, but reduce SALMONN by <strong>−4.4</strong>.</p></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="chart-card">
+            <h3>Grounding accuracy under context load</h3>
+            <p class="sub">Experiment A · GA (%) across five document tiers</p>
+            <svg id="chartGA" viewBox="0 0 520 305" width="100%" role="img" aria-label="Grounding accuracy across tiers T1 to T5 for seven systems; Cascaded stays near 90 percent, SALMONN collapses at T4, and Moshi remains near zero percent."></svg>
+            <div class="model-legend" id="modelLegend" aria-label="Chart legend"></div>
+            <p class="source-line">Values: paper Table 3.</p>
+          </div>
+          <div class="chart-card">
+            <h3>When grounding fails, hallucinations rise</h3>
+            <p class="sub">Experiment A · HR (%) highlighted in the paper's main results</p>
+            <span class="result-kicker" style="margin-top:17px">SALMONN: Hallucination rate</span>
+            <div class="comparison-row"><span>T3 · ≈2k</span><span class="comparison-track"><span class="comparison-fill" style="--bar-width:50.17%;--bar-color:#e69a30"></span></span><b>30.1%</b></div>
+            <div class="comparison-row"><span>T4 · ≈4k</span><span class="comparison-track"><span class="comparison-fill" style="--bar-width:66.33%;--bar-color:#df723c"></span></span><b>39.8%</b></div>
+            <div class="comparison-row"><span>T5 · ≈8k</span><span class="comparison-track"><span class="comparison-fill" style="--bar-width:77.5%;--bar-color:#cb3c52"></span></span><b>46.5%</b></div>
+            <div class="metric-pair">
+              <div><span class="result-kicker">MiniCPM-o · T5</span><span class="stat-emphasis">25.0%</span><span class="muted-note">Hallucination rate</span></div>
+              <div><span class="result-kicker">UV-32B · T5</span><span class="stat-emphasis">22.7%</span><span class="muted-note">Hallucination rate</span></div>
+            </div>
+            <p class="muted-note" style="margin-top:14px">Gemini-Live remains comparatively stable at <strong>10.5–13.7% HR</strong> across all five tiers.</p>
+            <p class="source-line">Values: paper Figure 3 and the accompanying main results. Bar scale: 0–60%.</p>
+          </div>
+        </div>
+
+        <h3 class="section-subhead">Experiment A — Grounding accuracy by context tier</h3>
+        <div class="table-wrap">
+          <table class="data" id="tblA" aria-label="Grounding accuracy by context tier">
+            <thead><tr><th scope="col">Model</th><th scope="col">T1 · ≈500</th><th scope="col">T2 · ≈1k</th><th scope="col">T3 · ≈2k</th><th scope="col">T4 · ≈4k</th><th scope="col">T5 · ≈8k</th></tr></thead>
+            <tbody>
+              <tr><td>Cascaded</td><td>88.7</td><td>89.8</td><td class="strong-cell">90.3</td><td>90.4</td><td>88.5</td></tr>
+              <tr><td>Gemini-Live</td><td>85.9</td><td>86.9</td><td>87.4</td><td>90.2</td><td>86.9</td></tr>
+              <tr><td>GPT-Realtime</td><td>88.0</td><td>86.6</td><td>87.7</td><td>88.2</td><td>85.8</td></tr>
+              <tr><td>MiniCPM-o</td><td>85.9</td><td>87.6</td><td>88.0</td><td>87.2</td><td>74.0</td></tr>
+              <tr><td>UV-32B</td><td>87.0</td><td>85.4</td><td>85.5</td><td>80.2</td><td>75.4</td></tr>
+              <tr><td>SALMONN</td><td>77.4</td><td>76.3</td><td>70.3</td><td>37.2</td><td>25.4</td></tr>
+              <tr><td>Moshi</td><td>6.8</td><td>5.9</td><td>3.2</td><td>3.2</td><td>2.4</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="cap">Paper Table 3 — Grounding Accuracy (GA, %). All values are from the main-paper table. MiniCPM-o drops at T5; SALMONN collapses beginning at T4.</p>
+
+        <h3 class="section-subhead">Document domain matters, too</h3>
+        <p class="lede section-intro">Clinical protocols and FDA 510(k) filings are harder than leases and municipal records. Domain-specific evidence requirements affect grounding even at the same 2k-token tier.</p>
+        <div class="table-wrap">
+          <table class="data" id="tblDomain" aria-label="Grounding accuracy by professional document domain at T3">
+            <thead><tr><th scope="col">Domain</th><th scope="col">Cascaded</th><th scope="col">GPT-RT</th><th scope="col">Gemini-L</th><th scope="col">MiniCPM-o</th><th scope="col">UV-32B</th><th scope="col">SALMONN</th></tr></thead>
+            <tbody>
+              <tr><td>Clinical Trials</td><td class="strong-cell">83.9</td><td>78.9</td><td>81.4</td><td>80.7</td><td>82.5</td><td>62.5</td></tr>
+              <tr><td>Earnings Calls</td><td class="strong-cell">93.8</td><td>89.4</td><td>88.2</td><td>91.9</td><td>91.9</td><td>70.8</td></tr>
+              <tr><td>FDA 510(k)</td><td>82.1</td><td class="strong-cell">84.6</td><td>78.6</td><td>78.6</td><td class="strong-cell">84.6</td><td>57.3</td></tr>
+              <tr><td>Commercial Leases</td><td class="strong-cell">98.6</td><td class="strong-cell">98.6</td><td>96.4</td><td>95.7</td><td>97.8</td><td>86.2</td></tr>
+              <tr><td>Municipal Minutes</td><td class="strong-cell">96.1</td><td>93.3</td><td>95.0</td><td class="strong-cell">96.1</td><td>95.0</td><td>78.2</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="cap">Paper Table 4 — Grounding Accuracy (%, T3). The main-paper domain comparison reports these six systems.</p>
+
+        <div class="two-up" style="margin-top:28px">
+          <div>
+            <h3 class="section-subhead" style="margin-top:0">Experiment B — Grounding decay</h3>
+            <div class="table-wrap">
+              <table class="data" id="tblB" aria-label="Grounding decay scores across repeated probes">
+                <thead><tr><th scope="col">Model</th><th scope="col">GA(A)</th><th scope="col">GA(B)</th><th scope="col">GA(A′)</th><th scope="col">GDS</th></tr></thead>
+                <tbody>
+                  <tr><td>Gemini-Live</td><td>86.7</td><td>85.1</td><td>90.1</td><td class="delta-pos">+3.3</td></tr>
+                  <tr><td>Cascaded</td><td>86.7</td><td>86.7</td><td>86.7</td><td>+0.0</td></tr>
+                  <tr><td>GPT-Realtime</td><td>86.7</td><td>85.0</td><td>87.0</td><td class="delta-pos">+0.3</td></tr>
+                  <tr><td>MiniCPM-o</td><td>83.3</td><td>86.7</td><td>81.7</td><td class="delta-neg">−1.7</td></tr>
+                  <tr><td>UV-32B</td><td>80.0</td><td>78.3</td><td>75.0</td><td class="delta-neg">−5.0</td></tr>
+                  <tr><td>SALMONN</td><td>76.7</td><td>65.0</td><td>72.1</td><td class="delta-neg">−4.6</td></tr>
+                  <tr><td>Moshi</td><td>1.7</td><td>5.0</td><td>1.3</td><td class="delta-neg">−0.4</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="cap">Paper Table 5 — GDS = GA(A′) − GA(A), reported in percentage points. Negative values mean forgetting; GDS should be read alongside initial accuracy.</p>
+          </div>
+          <div>
+            <h3 class="section-subhead" style="margin-top:0">Experiment C — Proactive grounding</h3>
+            <div class="table-wrap">
+              <table class="data" id="tblC" aria-label="Grounding accuracy under no, one, or multiple context refreshes">
+                <thead><tr><th scope="col">Model</th><th scope="col">C₀</th><th scope="col">C₁</th><th scope="col">C₂</th><th scope="col">Δlight</th><th scope="col">Δheavy</th></tr></thead>
+                <tbody>
+                  <tr><td>GPT-Realtime</td><td>79.6</td><td class="strong-cell">94.2</td><td>88.1</td><td class="delta-pos">+14.6</td><td class="delta-pos">+8.5</td></tr>
+                  <tr><td>Cascaded</td><td>87.8</td><td>94.2</td><td class="strong-cell">94.9</td><td class="delta-pos">+6.4</td><td class="delta-pos">+7.1</td></tr>
+                  <tr><td>Gemini-Live</td><td>83.89</td><td class="strong-cell">84.44</td><td>83.89</td><td class="delta-pos">+0.56</td><td>0.0</td></tr>
+                  <tr><td>MiniCPM-o</td><td class="strong-cell">90.6</td><td>89.4</td><td>89.4</td><td class="delta-neg">−1.1</td><td class="delta-neg">−1.1</td></tr>
+                  <tr><td>UV-32B</td><td class="strong-cell">88.9</td><td>88.3</td><td>86.7</td><td class="delta-neg">−0.6</td><td class="delta-neg">−2.2</td></tr>
+                  <tr><td>SALMONN</td><td class="strong-cell">68.9</td><td>66.1</td><td>64.4</td><td class="delta-neg">−2.8</td><td class="delta-neg">−4.4</td></tr>
+                  <tr><td>Moshi</td><td class="strong-cell">5.0</td><td>3.3</td><td>1.7</td><td class="delta-neg">−1.7</td><td class="delta-neg">−3.3</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="cap">Paper Table 6 — GA (%) under no refresh (C₀), one refresh (C₁), and multiple refreshes (C₂), with change relative to C₀ in points.</p>
+          </div>
+        </div>
+
+        <h3 class="section-subhead">Latency and the quality-adjusted frontier</h3>
+        <p class="lede section-intro">Fast responses are not enough if answers are ungrounded. The paper jointly evaluates <strong>Grounding Accuracy at T3</strong> and <strong>First-Token Emission Delay (FTED)</strong> through <span class="formula">QAL = FTED<sub>p50</sub> × (1 − GA@T3)</span>, with GA expressed as a fraction.</p>
+        <div class="table-wrap">
+          <table class="data" id="tblL" aria-label="Latency and quality-adjusted latency across seven systems">
+            <thead><tr><th scope="col">Model</th><th scope="col">GA@T3 (%)</th><th scope="col">p50 (ms) ↓</th><th scope="col">Mean (ms) ↓</th><th scope="col">p95 (ms) ↓</th><th scope="col">QAL (ms) ↓</th></tr></thead>
+            <tbody>
+              <tr><td>Cascaded</td><td>90.3</td><td>1,469</td><td>8,118</td><td>61,563</td><td class="strong-cell">143</td></tr>
+              <tr><td>GPT-Realtime</td><td>87.7</td><td>1,214</td><td>1,311</td><td>1,761</td><td class="strong-cell">150</td></tr>
+              <tr><td>Moshi</td><td>3.2</td><td>229</td><td>251</td><td>737</td><td>228</td></tr>
+              <tr><td>MiniCPM-o</td><td>88.0</td><td>2,317</td><td>4,566</td><td>11,975</td><td>278</td></tr>
+              <tr><td>Gemini-Live</td><td>87.4</td><td>6,806</td><td>9,410</td><td>6,949</td><td>856</td></tr>
+              <tr><td>SALMONN</td><td>70.3</td><td>3,763</td><td>7,665</td><td>30,349</td><td>1,118</td></tr>
+              <tr><td>UV-32B</td><td>85.5</td><td>9,855</td><td>10,723</td><td>21,530</td><td>1,036</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="cap">Paper Table 7 and Figure 4 — FTED and Quality-Adjusted Latency. Cascaded and GPT-Realtime lead the quality-adjusted trade-off; Moshi is fast but has only 3.2% GA at T3.</p>
+
+        <p class="plain-insight"><strong>Takeaway:</strong> Reliable document-grounded voice agents require more than low response latency. Context capacity, long-turn factual retention, domain difficulty, and refresh strategy all affect whether a spoken answer is supported by the source.</p>
+      </div>
+    </section>
+
+    <section id="explore-teaser">
+      <div class="wrap">
+        <div class="card" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;justify-content:space-between">
+          <div style="max-width:60ch">
+            <p class="eyebrow" style="margin-bottom:6px">Qualitative examples</p>
+            <h2 class="section-title" style="font-size:22px">Hear the questions. Inspect the grounding evidence.</h2>
+            <p class="lede" style="margin-bottom:0">Explore available spoken benchmark examples, source documents, model responses, and grounding judgments by domain and context tier.</p>
+          </div>
+          <a class="btn primary" href="explorer.html"><span class="ico">🎧</span> Open the Audio Explorer</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="cite">
+      <div class="wrap">
+        <p class="eyebrow">Citation</p>
+        <h2 class="section-title">Cite DSB-DG</h2>
+        <pre class="bib" id="bib"><button class="copy-btn" type="button" id="copyBibBtn" onclick="copyBib()">Copy</button>@misc{mathur2026duplexspeechbench,
+  title         = {DuplexSpeechBench-Document Grounding: Benchmarking Document Grounding and Hallucinations in Voice Agents},
+  author        = {Puneet Mathur and Nedim Lipka and Zeyu Jin and Dinesh Manocha},
+  year          = {2026},
+  eprint        = {2610.00316},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL},
+  url           = {https://arxiv.org/abs/2610.00316}
 }</pre>
-  </div>
-</section>
+        <p class="source-line">Paper: <a href="https://arxiv.org/abs/2610.00316" target="_blank" rel="noopener noreferrer">arXiv:2610.00316</a></p>
+      </div>
+    </section>
+  </main>
 
-<footer>
-  <div class="wrap">
-    DSB-DG — DuplexSpeechBench · Document Grounding &nbsp;·&nbsp; Adobe Research &amp; University of Maryland.
-  </div>
-</footer>
+  <footer><div class="wrap">DSB-DG — DuplexSpeechBench · Document Grounding &nbsp;·&nbsp; Adobe Research &amp; University of Maryland.</div></footer>
 
-<script src="assets/js/charts.js"></script>
-<script>
-/* theme toggle (shared) */
-(function(){
-  const root=document.documentElement, KEY='dsbdg-theme';
-  const saved=localStorage.getItem(KEY);
-  if(saved) root.setAttribute('data-theme',saved);
-  const btn=document.getElementById('themeBtn');
-  function cur(){ return root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'); }
-  btn && btn.addEventListener('click',()=>{ const n=cur()==='dark'?'light':'dark'; root.setAttribute('data-theme',n); localStorage.setItem(KEY,n); window.__redrawCharts&&window.__redrawCharts(); });
-})();
-function copyBib(){ const t=document.getElementById('bib').innerText.replace(/^Copy\n/,''); navigator.clipboard.writeText(t); const b=document.querySelector('.copy-btn'); b.textContent='Copied ✓'; setTimeout(()=>b.textContent='Copy',1500); }
-</script>
+  <script>
+    /* This page owns its chart data. Do NOT load the old assets/js/charts.js. */
+    const gaSeries = [
+      {name:'Cascaded', color:'#1f2937', values:[88.7,89.8,90.3,90.4,88.5]},
+      {name:'Gemini-Live', color:'#d5538e', values:[85.9,86.9,87.4,90.2,86.9]},
+      {name:'GPT-Realtime', color:'#3868de', values:[88.0,86.6,87.7,88.2,85.8]},
+      {name:'MiniCPM-o', color:'#14999c', values:[85.9,87.6,88.0,87.2,74.0]},
+      {name:'UV-32B', color:'#d78b24', values:[87.0,85.4,85.5,80.2,75.4]},
+      {name:'SALMONN', color:'#d74d44', values:[77.4,76.3,70.3,37.2,25.4]},
+      {name:'Moshi', color:'#8870c8', values:[6.8,5.9,3.2,3.2,2.4]}
+    ];
+    function renderGroundingChart() {
+      const svg = document.getElementById('chartGA');
+      if (!svg) return;
+      const NS='http://www.w3.org/2000/svg';
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark' || (!document.documentElement.getAttribute('data-theme') && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      const ink=dark?'#cbd5e1':'#64748b', grid=dark?'#354252':'#e3e9f0';
+      const W=520,H=305, margin={l:42,r:20,t:18,b:42};
+      const x=i=>margin.l+(W-margin.l-margin.r)*i/4;
+      const y=v=>H-margin.b-(H-margin.t-margin.b)*v/100;
+      while(svg.firstChild)svg.removeChild(svg.firstChild);
+      function el(tag,attributes,text){const n=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attributes||{}))n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;svg.appendChild(n);return n;}
+      for(let p=0;p<=100;p+=20){el('line',{x1:margin.l,x2:W-margin.r,y1:y(p),y2:y(p),stroke:grid,'stroke-width':1,'stroke-dasharray':p?'3 4':'0'});el('text',{x:margin.l-9,y:y(p)+4,'text-anchor':'end',fill:ink,'font-size':12},String(p));}
+      ['T1','T2','T3','T4','T5'].forEach((t,i)=>{el('text',{x:x(i),y:H-17,'text-anchor':'middle',fill:ink,'font-size':12},t);});
+      gaSeries.forEach(s=>{
+        el('polyline',{points:s.values.map((v,i)=>`${x(i)},${y(v)}`).join(' '),fill:'none',stroke:s.color,'stroke-width':2.5,'stroke-linecap':'round','stroke-linejoin':'round'});
+        s.values.forEach((v,i)=>{const c=el('circle',{cx:x(i),cy:y(v),r:3.4,fill:s.color,stroke:dark?'#17212d':'#fff','stroke-width':1});const title=document.createElementNS(NS,'title');title.textContent=`${s.name} ${['T1','T2','T3','T4','T5'][i]}: ${v.toFixed(1)}%`;c.appendChild(title);});
+      });
+      el('text',{x:W/2,y:H-1,'text-anchor':'middle',fill:ink,'font-size':12},'Document context tier');
+    }
+    (function initPage(){
+      const root=document.documentElement,KEY='dsbdg-theme';
+      try{const saved=localStorage.getItem(KEY);if(saved==='dark'||saved==='light')root.setAttribute('data-theme',saved);}catch(e){}
+      const legend=document.getElementById('modelLegend');
+      if(legend){gaSeries.forEach(s=>{const item=document.createElement('span');item.className='legend-entry';const swatch=document.createElement('span');swatch.className='legend-swatch';swatch.style.setProperty('--model-color',s.color);item.appendChild(swatch);item.appendChild(document.createTextNode(s.name));legend.appendChild(item);});}
+      renderGroundingChart();
+      const btn=document.getElementById('themeBtn');
+      if(btn)btn.addEventListener('click',()=>{
+        const isDark=root.getAttribute('data-theme')==='dark'||(!root.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);
+        const next=isDark?'light':'dark';root.setAttribute('data-theme',next);try{localStorage.setItem(KEY,next);}catch(e){}renderGroundingChart();
+      });
+      if(window.matchMedia){const mq=matchMedia('(prefers-color-scheme: dark)');if(mq.addEventListener)mq.addEventListener('change',()=>{if(!root.getAttribute('data-theme'))renderGroundingChart();});}
+    })();
+    async function copyBib(){
+      const bib=document.getElementById('bib'),btn=document.getElementById('copyBibBtn');
+      const source=Array.from(bib.childNodes).filter(n=>n!==btn).map(n=>n.textContent).join('').trim();
+      try{await navigator.clipboard.writeText(source);btn.textContent='Copied ✓';}
+      catch(e){const range=document.createRange();range.selectNodeContents(bib);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);btn.textContent='Select & copy';}
+      window.setTimeout(()=>btn.textContent='Copy',1800);
+    }
+  </script>
 </body>
 </html>
